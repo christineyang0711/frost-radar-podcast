@@ -11,6 +11,8 @@ on:
         description: 'Validate queue without activating an episode'
         type: boolean
         default: false
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
 permissions:
   contents: write
   pages: write

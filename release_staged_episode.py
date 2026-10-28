@@ -3,6 +3,7 @@ import argparse
 from datetime import date, datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -99,3 +100,7 @@ if __name__=='__main__':
     else:result=release_one(args.root,dry_run=args.dry_run)
     if args.export_dir:result['exported']=export_site(args.root,args.export_dir)
     print(json.dumps(result,ensure_ascii=False))
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as summary:
+            summary.write('## Podcast release\n\n'+json.dumps(result,ensure_ascii=False)+'\n')
+    if not args.dry_run and result.get('status')=='queue_empty':raise SystemExit(2)
