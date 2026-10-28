@@ -1,0 +1,73 @@
+name: Morning podcast release
+on:
+  push:
+    branches: [gh-pages]
+  schedule:
+    - cron: '35 21 * * *' # 05:35 Asia/Shanghai
+    - cron: '55 21 * * *' # 05:55 recovery check; same-day release is idempotent
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Validate queue without activating an episode'
+        type: boolean
+        default: false
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: podcast-release-and-pages
+  cancel-in-progress: false
+jobs:
+  release-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Release at most one episode for today's Shanghai date
+        env:
+          DRY_RUN: ${{ inputs.dry_run || false }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python -S release_staged_episode.py --dry-run
+          else
+            python -S release_staged_episode.py
+          fi
+      - name: Commit and push release without overwriting local production
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- feed.xml index.html published
+          if [ -d staged ]; then git add -A -- staged; fi
+          if ! git diff --cached --quiet; then
+            git commit -m 'Release daily commute podcast'
+            pushed=false
+            for attempt in 1 2 3; do
+              if git push origin HEAD:gh-pages; then
+                pushed=true
+                break
+              fi
+              git fetch origin gh-pages
+              git rebase origin/gh-pages
+            done
+            test "$pushed" = true
+          fi
+      - name: Verify and export published files only
+        run: python -S release_staged_episode.py --verify-only --export-dir "$RUNNER_TEMP/podcast-public"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/podcast-public
+      - name: Deploy Pages explicitly
+        id: deployment
+        uses: actions/deploy-pages@v4
