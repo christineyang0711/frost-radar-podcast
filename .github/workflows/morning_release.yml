@@ -3,8 +3,10 @@ on:
   push:
     branches: [gh-pages]
   schedule:
-    - cron: '35 21 * * *' # 05:35 Asia/Shanghai
-    - cron: '55 21 * * *' # 05:55 recovery check; same-day release is idempotent
+    - cron: '17 16 * * *' # 00:17 Asia/Shanghai
+    - cron: '17 18 * * *' # 02:17 Asia/Shanghai
+    - cron: '17 20 * * *' # 04:17 Asia/Shanghai
+    - cron: '47 21 * * *' # 05:47 Asia/Shanghai
   workflow_dispatch:
     inputs:
       dry_run:
