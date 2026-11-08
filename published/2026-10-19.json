@@ -7,7 +7,10 @@
   "duration": 379.152358,
   "staged_at": "2026-10-28T17:26:30.120433+00:00",
   "report_date": "2025-08-29",
-  "status": "staged",
+  "status": "published",
   "bytes": 6067673,
-  "audio_sha256": "58eaf666b0ecd6561dbcf80c0bda1058aeda77243915ddc04a7eab138fd85bd6"
+  "audio_sha256": "58eaf666b0ecd6561dbcf80c0bda1058aeda77243915ddc04a7eab138fd85bd6",
+  "published_at": "2026-11-08T20:29:23.729444+00:00",
+  "release_day": "2026-11-09",
+  "display_date": "2026-11-09"
 }
